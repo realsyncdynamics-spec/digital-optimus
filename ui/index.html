@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Optimus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
+    .header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a2a4a; }
+    .header h1 { font-size: 18px; background: linear-gradient(90deg, #00d4ff, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .status { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #00ff88; }
+    .status-dot.offline { background: #ff4444; }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 240px; background: #111122; border-right: 1px solid #2a2a4a; padding: 16px; overflow-y: auto; }
+    .sidebar h3 { font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 12px; letter-spacing: 1px; }
+    .nav-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 4px; transition: background 0.2s; }
+    .nav-item:hover, .nav-item.active { background: #1a1a3e; color: #00d4ff; }
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    .card { background: #111122; border: 1px solid #2a2a4a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 16px; margin-bottom: 12px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #00d4ff, #7b2ff7); color: white; }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary { background: #2a2a4a; color: #e0e0e0; }
+    .task-input { width: 100%; padding: 12px 16px; background: #0a0a1a; border: 1px solid #2a2a4a; border-radius: 8px; color: #e0e0e0; font-size: 14px; outline: none; margin-bottom: 12px; }
+    .task-input:focus { border-color: #00d4ff; }
+    .log-area { background: #0a0a1a; border-radius: 8px; padding: 16px; font-family: 'Fira Code', monospace; font-size: 12px; max-height: 300px; overflow-y: auto; line-height: 1.8; }
+    .log-entry { padding: 2px 0; }
+    .log-entry .time { color: #666; }
+    .log-entry .action { color: #00d4ff; }
+    .log-entry .result { color: #00ff88; }
+    .log-entry .error { color: #ff4444; }
+    .automations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .automation-card { background: #0a0a1a; border: 1px solid #2a2a4a; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.2s; }
+    .automation-card:hover { border-color: #00d4ff; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-active { background: rgba(0,255,136,0.15); color: #00ff88; }
+    .badge-manual { background: rgba(0,212,255,0.15); color: #00d4ff; }
+    .screen-preview { background: #000; border-radius: 8px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; color: #444; margin-bottom: 12px; overflow: hidden; }
+    .screen-preview img { width: 100%; height: 100%; object-fit: contain; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Digital Optimus</h1>
+    <div class="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Agent bereit</span>
+    </div>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <h3>Navigation</h3>
+      <div class="nav-item active" data-view="agent">Agent</div>
+      <div class="nav-item" data-view="automations">Automations</div>
+      <div class="nav-item" data-view="capture">Screen Capture</div>
+      <div class="nav-item" data-view="logs">Logs</div>
+    </div>
+    <div class="content" id="content">
+      <!-- Agent View -->
+      <div id="view-agent">
+        <div class="card">
+          <h2>Task ausfuehren</h2>
+          <input class="task-input" id="taskInput" placeholder="Beschreibe die Aufgabe... z.B. 'Oeffne Chrome und suche nach...'" />
+          <button class="btn btn-primary" id="btnExecute">Agent starten</button>
+        </div>
+        <div class="card">
+          <h2>Agent Log</h2>
+          <div class="log-area" id="agentLog">
+            <div class="log-entry"><span class="time">[System]</span> <span class="result">Digital Optimus bereit. Warte auf Aufgabe...</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const views = { agent: document.getElementById('view-agent') };
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+    // Execute task
+    const taskInput = document.getElementById('taskInput');
+    const btnExecute = document.getElementById('btnExecute');
+    const agentLog = document.getElementById('agentLog');
+    function addLog(type, message) {
+      const time = new Date().toLocaleTimeString('de-DE');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="time">[${time}]</span> <span class="${type}">${message}</span>`;
+      agentLog.appendChild(entry);
+      agentLog.scrollTop = agentLog.scrollHeight;
+    }
+    btnExecute.addEventListener('click', async () => {
+      const task = taskInput.value.trim();
+      if (!task) return;
+      addLog('action', `Task: ${task}`);
+      btnExecute.disabled = true;
+      btnExecute.textContent = 'Agent arbeitet...';
+      try {
+        const result = await window.digitalOptimus.executeTask(task);
+        addLog('result', `Ergebnis: ${JSON.stringify(result)}`);
+      } catch (err) {
+        addLog('error', `Fehler: ${err.message}`);
+      }
+      btnExecute.disabled = false;
+      btnExecute.textContent = 'Agent starten';
+      taskInput.value = '';
+    });
+    // Listen for agent events
+    window.digitalOptimus.onAgentLog((data) => addLog(data.type || 'action', data.message));
+    window.digitalOptimus.onTaskUpdate((data) => addLog('result', `Task Update: ${data.status}`));
+  </script>
+</body>
+</html>
