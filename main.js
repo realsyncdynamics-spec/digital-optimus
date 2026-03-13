@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // Digital Optimus - Electron Main Process
 // RealSync Dynamics 2026
 
