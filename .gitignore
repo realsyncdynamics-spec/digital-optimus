@@ -136,4 +136,14 @@ dist
 
 # Vite logs files
 vite.config.js.timestamp-*
+
+# Digital Optimus
+.env
+.env.local
+dist/
+out/
+captures/
+*.dmg
+*.exe
+*.AppImage
 vite.config.ts.timestamp-*
