@@ -1,0 +1,44 @@
+{
+  "name": "digital-optimus",
+  "version": "0.1.0",
+  "description": "Digital Optimus - KI Screen-Agent for Creator-Automation by RealSync Dynamics",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "screenshot-desktop": "^1.15.0",
+    "sharp": "^0.33.0",
+    "node-fetch": "^3.3.0",
+    "robotjs": "^0.6.0",
+    "tesseract.js": "^5.1.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "de.realsyncdynamics.digital-optimus",
+    "productName": "Digital Optimus",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  },
+  "author": "RealSync Dynamics",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realsyncdynamics-spec/digital-optimus"
+  }
+}
