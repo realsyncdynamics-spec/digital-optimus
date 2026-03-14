@@ -69,3 +69,39 @@ npm start
 ## Lizenz
 
 Proprietary - RealSync Dynamics 2026
+
+
+---
+
+## Go Agent (Native Desktop Automation)
+
+Native Go-basierte Desktop-Automation mit `robotgo`. Laeuft neben der Electron-App als performanter Kern-Agent.
+
+### Struktur
+
+```
+go-agent/
+  cmd/desktop-client/main.go    # Entry Point - Session-Start, Signal-Handling
+  internal/desktop/
+    session.go                   # Capture-Loop mit Ticker
+    screen.go                    # Screenshot via robotgo
+    input.go                     # Maus/Tastatur-Automation
+    hotkey.go                    # Global Hotkey (Ctrl+Alt+O)
+  go.mod                         # Go Module mit robotgo + gohook
+```
+
+### Quick Start
+
+```bash
+cd go-agent
+go mod tidy
+go run cmd/desktop-client/main.go
+```
+
+### Features
+
+- Screen Capture alle 3 Sekunden (konfigurierbar)
+- Maus/Tastatur-Steuerung (MoveMouse, Click, TypeText, KeyTap, Scroll)
+- Global Hotkey Ctrl+Alt+O zum Togglen der Session
+- Graceful Shutdown via Ctrl+C
+- Vorbereitet fuer LLM-Integration (TODO in session.go)
