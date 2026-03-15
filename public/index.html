@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Optimus - KI Screen-Agent by RealSync Dynamics</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;background:radial-gradient(ellipse at center,#1a1a00 0%,#000 70%)}
+.badge{background:#eab308;color:#000;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:1.5rem;display:inline-block}
+h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:900;line-height:1.1;margin-bottom:1rem}
+h1 span{color:#eab308}
+.sub{color:#999;font-size:1.1rem;max-width:600px;margin-bottom:2.5rem;line-height:1.6}
+.cta{display:inline-flex;gap:12px}
+.cta a{padding:14px 32px;border-radius:12px;font-weight:700;text-decoration:none;font-size:1rem;transition:.2s}
+.cta .primary{background:#eab308;color:#000}.cta .primary:hover{background:#facc15}
+.cta .secondary{border:1px solid #333;color:#ccc}.cta .secondary:hover{border-color:#eab308;color:#eab308}
+.features{padding:80px 2rem;max-width:1100px;margin:0 auto}
+.features h2{text-align:center;font-size:2rem;margin-bottom:3rem}
+.features h2 span{color:#eab308}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.card{background:#111;border:1px solid #222;border-radius:16px;padding:2rem;transition:.2s}
+.card:hover{border-color:#eab30866}
+.card h3{color:#eab308;margin-bottom:.5rem;font-size:1.1rem}
+.card p{color:#888;font-size:.9rem;line-height:1.5}
+.pricing{padding:80px 2rem;text-align:center}
+.pricing h2{font-size:2rem;margin-bottom:3rem}
+.pricing h2 span{color:#eab308}
+.tiers{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+.tier{background:#111;border:1px solid #222;border-radius:16px;padding:2rem;width:260px;text-align:left}
+.tier.pop{border-color:#eab308;box-shadow:0 0 30px #eab30822}
+.tier h3{font-size:1.2rem;margin-bottom:.25rem}
+.tier .price{font-size:2.5rem;font-weight:900;margin:.5rem 0}
+.tier .price span{color:#666;font-size:1rem;font-weight:400}
+.tier ul{list-style:none;margin:1rem 0}
+.tier li{color:#999;font-size:.85rem;padding:4px 0}
+.tier li::before{content:'\2713 ';color:#eab308}
+.tier a{display:block;text-align:center;padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-top:1rem;transition:.2s}
+.tier a.gold{background:#eab308;color:#000}
+.tier a.outline{border:1px solid #333;color:#ccc}
+footer{text-align:center;padding:3rem;color:#555;font-size:.8rem;border-top:1px solid #111}
+</style>
+</head>
+<body>
+<section class="hero">
+<div class="badge">BETA - JETZT TESTEN</div>
+<h1><span>Digital Optimus</span><br>KI Screen-Agent</h1>
+<p class="sub">Dein Desktop-Agent automatisiert Creator-Workflows: Browser-Steuerung, Content-Erstellung, Social-Media-Posting - alles per Voice oder Chat.</p>
+<div class="cta">
+<a href="https://realsync-platform.vercel.app/login" class="primary">Jetzt starten</a>
+<a href="https://github.com/realsyncdynamics-spec/digital-optimus" class="secondary">GitHub</a>
+</div>
+</section>
+<section class="features">
+<h2>Was <span>Optimus</span> kann</h2>
+<div class="grid">
+<div class="card"><h3>Screen Automation</h3><p>Steuert deinen Desktop per KI. Klickt, tippt, navigiert - wie ein digitaler Assistent.</p></div>
+<div class="card"><h3>Browser Control</h3><p>Automatisierte Web-Interaktionen: Formulare, Uploads, Downloads, Social-Media-Posts.</p></div>
+<div class="card"><h3>Voice Commands</h3><p>Sprich mit Optimus. Sage was du brauchst, er erledigt den Rest.</p></div>
+<div class="card"><h3>Creator Workflows</h3><p>YouTube-Upload, Thumbnail-Erstellung, Beschreibung generieren, SEO-Tags setzen.</p></div>
+<div class="card"><h3>Multi-Platform</h3><p>Postet automatisch auf YouTube, Instagram, TikTok, X und mehr.</p></div>
+<div class="card"><h3>Go + Electron</h3><p>Schneller Go-Backend-Agent mit Electron-UI. Native Performance, plattformuebergreifend.</p></div>
+</div>
+</section>
+<section class="pricing">
+<h2><span>Pricing</span></h2>
+<div class="tiers">
+<div class="tier"><h3>Free</h3><div class="price">0EUR<span>/Monat</span></div><ul><li>5 Automationen/Tag</li><li>Basic Browser Control</li><li>Community Support</li></ul><a href="#" class="outline">Kostenlos starten</a></div>
+<div class="tier pop"><h3>Pro</h3><div class="price">29EUR<span>/Monat</span></div><ul><li>Unlimitierte Automationen</li><li>Voice Commands</li><li>Multi-Platform Posting</li><li>Priority Support</li></ul><a href="#" class="gold">Pro starten</a></div>
+<div class="tier"><h3>Enterprise</h3><div class="price">99EUR<span>/Monat</span></div><ul><li>Alles aus Pro</li><li>Custom Workflows</li><li>API Zugriff</li><li>Dedicated Support</li></ul><a href="#" class="outline">Kontakt</a></div>
+</div>
+</section>
+<footer>2024-2026 RealSync Dynamics. Made in Germany.</footer>
+</body>
+</html>
