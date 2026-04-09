@@ -10,23 +10,25 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/realsyncdynamics-spec/digital-optimus/go-agent/internal/bridge"
 	"github.com/realsyncdynamics-spec/digital-optimus/go-agent/internal/desktop"
 )
 
 const (
-	version       = "0.1.0"
+	version         = "0.1.0"
 	captureInterval = 3 * time.Second
-	screenshotDir  = "./screenshots"
+	screenshotDir   = "./screenshots"
 )
 
 func main() {
-	fmt.Printf("Digital Optimus Desktop Client v%s\n", version)
-	fmt.Println("Press Ctrl+C to stop")
-
-	// Ensure screenshot directory exists
-	if err := os.MkdirAll(screenshotDir, 0755); err != nil {
-		log.Fatalf("Failed to create screenshot dir: %v", err)
+	httpMode := false
+	for _, arg := range os.Args[1:] {
+		if arg == "--http" {
+			httpMode = true
+		}
 	}
+
+	fmt.Printf("Digital Optimus Desktop Client v%s\n", version)
 
 	// Context with cancellation for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
@@ -38,19 +40,51 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	// Start session
-	session := desktop.NewSession(desktop.SessionConfig{
-		Interval:      captureInterval,
-		ScreenshotDir: screenshotDir,
-	})
+	// Start HTTP bridge if --http flag is set (Electron will read the port from stdout)
+	if httpMode {
+		srv, err := bridge.NewServer(version)
+		if err != nil {
+			log.Fatalf("Failed to start HTTP bridge: %v", err)
+		}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		session.Run(ctx)
-	}()
+		// Print port on stdout so Electron can read it
+		fmt.Printf("LISTENING:%d\n", srv.Port())
 
-	fmt.Println("Session started. Capturing screen...")
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := srv.Serve(); err != nil {
+				log.Printf("[bridge] server stopped: %v", err)
+			}
+		}()
+
+		// Shut down bridge on context cancel
+		go func() {
+			<-ctx.Done()
+			srv.Shutdown(context.Background())
+		}()
+	} else {
+		fmt.Println("Press Ctrl+C to stop")
+
+		// Ensure screenshot directory exists
+		if err := os.MkdirAll(screenshotDir, 0755); err != nil {
+			log.Fatalf("Failed to create screenshot dir: %v", err)
+		}
+
+		// Start capture session
+		session := desktop.NewSession(desktop.SessionConfig{
+			Interval:      captureInterval,
+			ScreenshotDir: screenshotDir,
+		})
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			session.Run(ctx)
+		}()
+
+		fmt.Println("Session started. Capturing screen...")
+	}
 
 	// Wait for shutdown signal
 	<-sigChan

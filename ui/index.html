@@ -40,6 +40,16 @@
     .badge-manual { background: rgba(0,212,255,0.15); color: #00d4ff; }
     .screen-preview { background: #000; border-radius: 8px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; color: #444; margin-bottom: 12px; overflow: hidden; }
     .screen-preview img { width: 100%; height: 100%; object-fit: contain; }
+    /* Loading & Error States */
+    .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #2a2a4a; border-top-color: #00d4ff; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-banner { background: rgba(255,68,68,0.12); border: 1px solid rgba(255,68,68,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: none; align-items: center; gap: 10px; font-size: 13px; color: #ff6b6b; }
+    .error-banner.visible { display: flex; }
+    .error-banner .dismiss { margin-left: auto; cursor: pointer; color: #ff6b6b; background: none; border: none; font-size: 16px; line-height: 1; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .go-status { font-size: 11px; padding: 4px 10px; border-radius: 6px; }
+    .go-status.connected { background: rgba(0,255,136,0.12); color: #00ff88; }
+    .go-status.disconnected { background: rgba(255,68,68,0.12); color: #ff6b6b; }
   </style>
 </head>
 <body>
@@ -48,6 +58,7 @@
     <div class="status">
       <span class="status-dot" id="statusDot"></span>
       <span id="statusText">Agent bereit</span>
+      <span class="go-status disconnected" id="goStatus">Go: --</span>
     </div>
   </div>
   <div class="main">
@@ -61,6 +72,10 @@
     <div class="content" id="content">
       <!-- Agent View -->
       <div id="view-agent">
+        <div class="error-banner" id="errorBanner">
+          <span id="errorMessage"></span>
+          <button class="dismiss" id="errorDismiss">&times;</button>
+        </div>
         <div class="card">
           <h2>Task ausfuehren</h2>
           <input class="task-input" id="taskInput" placeholder="Beschreibe die Aufgabe... z.B. 'Oeffne Chrome und suche nach...'" />
@@ -77,17 +92,34 @@
   </div>
   <script>
     const views = { agent: document.getElementById('view-agent') };
-    // Navigation
+
+    // --- Error Banner ---
+    const errorBanner = document.getElementById('errorBanner');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorDismiss = document.getElementById('errorDismiss');
+
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorBanner.classList.add('visible');
+    }
+    function hideError() {
+      errorBanner.classList.remove('visible');
+    }
+    errorDismiss.addEventListener('click', hideError);
+
+    // --- Navigation ---
     document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
       });
     });
-    // Execute task
+
+    // --- Log Helper ---
     const taskInput = document.getElementById('taskInput');
     const btnExecute = document.getElementById('btnExecute');
     const agentLog = document.getElementById('agentLog');
+
     function addLog(type, message) {
       const time = new Date().toLocaleTimeString('de-DE');
       const entry = document.createElement('div');
@@ -96,25 +128,65 @@
       agentLog.appendChild(entry);
       agentLog.scrollTop = agentLog.scrollHeight;
     }
+
+    // --- Execute Task (with loading + error states) ---
     btnExecute.addEventListener('click', async () => {
       const task = taskInput.value.trim();
       if (!task) return;
+
+      hideError();
       addLog('action', `Task: ${task}`);
       btnExecute.disabled = true;
-      btnExecute.textContent = 'Agent arbeitet...';
+      btnExecute.innerHTML = '<span class="loading-spinner"></span>Agent arbeitet...';
+
       try {
         const result = await window.digitalOptimus.executeTask(task);
-        addLog('result', `Ergebnis: ${JSON.stringify(result)}`);
+
+        if (result && result.success === false) {
+          const errMsg = result.error || 'Unbekannter Fehler';
+          addLog('error', `Fehler: ${errMsg} (${result.code || 'UNKNOWN'})`);
+          showError(`Aktion fehlgeschlagen: ${errMsg}`);
+        } else if (result && result.success === true) {
+          addLog('result', `Ergebnis: ${JSON.stringify(result.data)}`);
+        } else {
+          addLog('result', `Ergebnis: ${JSON.stringify(result)}`);
+        }
       } catch (err) {
-        addLog('error', `Fehler: ${err.message}`);
+        addLog('error', `IPC Fehler: ${err.message}`);
+        showError(`Kommunikationsfehler: ${err.message}`);
       }
+
       btnExecute.disabled = false;
       btnExecute.textContent = 'Agent starten';
       taskInput.value = '';
     });
-    // Listen for agent events
+
+    // --- Event Listeners ---
     window.digitalOptimus.onAgentLog((data) => addLog(data.type || 'action', data.message));
     window.digitalOptimus.onTaskUpdate((data) => addLog('result', `Task Update: ${data.status}`));
+
+    // --- Go Bridge Status Check ---
+    const goStatus = document.getElementById('goStatus');
+
+    async function checkGoBridge() {
+      try {
+        const result = await window.digitalOptimus.getGoBridgeStatus();
+        if (result && result.success && result.data && result.data.connected) {
+          goStatus.textContent = `Go: Port ${result.data.port}`;
+          goStatus.className = 'go-status connected';
+        } else {
+          goStatus.textContent = 'Go: Offline';
+          goStatus.className = 'go-status disconnected';
+        }
+      } catch {
+        goStatus.textContent = 'Go: Offline';
+        goStatus.className = 'go-status disconnected';
+      }
+    }
+
+    // Check on load, then every 10s
+    checkGoBridge();
+    setInterval(checkGoBridge, 10000);
   </script>
 </body>
 </html>
